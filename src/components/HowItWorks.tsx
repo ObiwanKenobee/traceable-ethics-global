@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Target, Tool, LineChart, RefreshCw } from "lucide-react";
+import { Target, Wrench, LineChart, RefreshCw } from "lucide-react";
 
 const steps = [
   {
@@ -10,7 +10,7 @@ const steps = [
   {
     title: "Integrate Tools",
     description: "Implement our frameworks seamlessly into your workflow.",
-    icon: Tool,
+    icon: Wrench,
   },
   {
     title: "Monitor Risks",
