@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 // Supplier Management
 export async function addSupplier(data: {
@@ -8,9 +8,16 @@ export async function addSupplier(data: {
   coordinates: { x: number; y: number };
 }) {
   try {
+    // Convert the coordinates object to PostgreSQL point format
+    const pointString = `(${data.coordinates.x},${data.coordinates.y})`;
+    
     const { data: supplier, error } = await supabase
       .from('suppliers')
-      .insert([data])
+      .insert([{
+        name: data.name,
+        location: data.location,
+        coordinates: pointString
+      }])
       .select()
       .single();
 
