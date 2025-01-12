@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Map, Plus, Edit, Trash } from "lucide-react";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { addSupplier, startAssessment, uploadData } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface Supplier {
   id: string;
@@ -12,39 +15,61 @@ interface Supplier {
   complianceScore: number;
 }
 
-const initialSuppliers: Supplier[] = [
-  {
-    id: "1",
-    name: "Global Manufacturing Co.",
-    location: "Asia Pacific",
-    riskLevel: "low",
-    complianceScore: 92,
-  },
-  {
-    id: "2",
-    name: "EcoTextiles Ltd.",
-    location: "South America",
-    riskLevel: "medium",
-    complianceScore: 78,
-  },
-];
-
 export function TraceabilityTools() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const addSupplierMutation = useMutation({
+    mutationFn: addSupplier,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      toast({
+        title: "Success",
+        description: "Supplier added successfully",
+      });
+    },
+  });
+
+  const startAssessmentMutation = useMutation({
+    mutationFn: startAssessment,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Assessment started successfully",
+      });
+    },
+  });
+
+  const uploadDataMutation = useMutation({
+    mutationFn: uploadData,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Data uploaded successfully",
+      });
+    },
+  });
 
   const handleAddSupplier = () => {
-    // Implementation for adding a new supplier
-    console.log("Add supplier");
+    addSupplierMutation.mutate({
+      name: "New Supplier",
+      location: "Location",
+      coordinates: { x: 0, y: 0 }
+    });
   };
 
-  const handleEditSupplier = (id: string) => {
-    // Implementation for editing a supplier
-    console.log("Edit supplier", id);
+  const handleStartAssessment = (supplierId: string) => {
+    startAssessmentMutation.mutate(supplierId);
   };
 
-  const handleDeleteSupplier = (id: string) => {
-    setSuppliers(suppliers.filter(supplier => supplier.id !== id));
+  const handleUploadData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files?.length) return;
+    
+    const formData = new FormData();
+    formData.append('file', event.target.files[0]);
+    uploadDataMutation.mutate(formData);
   };
 
   const filteredSuppliers = suppliers.filter(supplier =>
@@ -75,10 +100,24 @@ export function TraceabilityTools() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button onClick={handleAddSupplier}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Supplier
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleAddSupplier}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Supplier
+          </Button>
+          <Input
+            type="file"
+            className="hidden"
+            id="data-upload"
+            onChange={handleUploadData}
+          />
+          <Button
+            variant="outline"
+            onClick={() => document.getElementById('data-upload')?.click()}
+          >
+            Upload Data
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -91,14 +130,19 @@ export function TraceabilityTools() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleEditSupplier(supplier.id)}
+                    onClick={() => handleStartAssessment(supplier.id)}
+                  >
+                    Start Assessment
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDeleteSupplier(supplier.id)}
                   >
                     <Trash className="w-4 h-4" />
                   </Button>
