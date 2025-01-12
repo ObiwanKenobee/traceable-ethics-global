@@ -1,9 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileBarChart, Download, Filter, Plus, Edit, Trash } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ReportsHeader } from "./reports/ReportsHeader";
+import { ReportsList } from "./reports/ReportsList";
 
 interface Report {
   id: string;
@@ -40,7 +39,6 @@ export function Reports() {
   const handleCreateReport = async () => {
     try {
       setIsLoading(true);
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       toast({
@@ -61,7 +59,6 @@ export function Reports() {
   const handleEditReport = async (id: string) => {
     try {
       setIsLoading(true);
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       toast({
@@ -89,7 +86,6 @@ export function Reports() {
 
     try {
       setIsLoading(true);
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       setReports(reports.filter(report => report.id !== reportToDelete));
@@ -112,76 +108,17 @@ export function Reports() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={isLoading}>
-            <Filter className="w-4 h-4 mr-2" />
-            Filter Reports
-          </Button>
-          <Button variant="default" size="sm" disabled={isLoading}>
-            <Download className="w-4 h-4 mr-2" />
-            Export Data
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={handleCreateReport} disabled={isLoading}>
-          <Plus className="w-4 h-4 mr-2" />
-          {isLoading ? "Creating..." : "Create Report"}
-        </Button>
-      </div>
-
-      <div className="grid gap-4">
-        {reports.map((report) => (
-          <Card key={report.id}>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>{report.title}</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditReport(report.id)}
-                    disabled={isLoading}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => confirmDelete(report.id)}
-                    disabled={isLoading}
-                  >
-                    <Trash className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Type:</span>
-                  <span>{report.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Created:</span>
-                  <span>{new Date(report.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Status:</span>
-                  <span className={`capitalize ${
-                    report.status === 'published' ? 'text-green-500' : 'text-yellow-500'
-                  }`}>
-                    {report.status}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <ReportsHeader 
+        onCreateReport={handleCreateReport}
+        isLoading={isLoading}
+      />
+      
+      <ReportsList
+        reports={reports}
+        isLoading={isLoading}
+        onEdit={handleEditReport}
+        onDelete={confirmDelete}
+      />
 
       <ConfirmDialog
         open={deleteDialogOpen}
